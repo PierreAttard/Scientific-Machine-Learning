@@ -23,7 +23,7 @@ class RungeKuttaIntegratorCell(Layer):
 
     def call(self, inputs, states):
         """
-        Runge–Kutta methods order 4 application
+        Runge–Kutta methods order 4 application. Classic RK
         :param inputs: pendulum angle
         :param states: pendulum angle and speed
         :return: new_inputs, new_states
