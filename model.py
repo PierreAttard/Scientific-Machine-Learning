@@ -64,14 +64,17 @@ class RungeKuttaIntegratorCell(Layer):
         return self.initial_state
 
 
-def create_model(omega, alpha, dt, initial_state, ub, lb, batch_input_shape, return_sequences=True, unroll=False):
+def create_model(omega, alpha, dt, initial_state, ub, lb, batch_input_shape, return_sequences=True, unroll=False,
+                 optimizer=None):
     rkCell = RungeKuttaIntegratorCell(omega=omega, alpha=alpha, dt=dt, initial_state=initial_state)
     PINN = RNN(cell=rkCell, batch_input_shape=batch_input_shape, return_sequences=return_sequences, return_state=False,
                unroll=unroll)
     model = Sequential()
-    model.add(tf.keras.layers.Lambda(lambda X: 2*(X - lb)/(ub - lb) - 1))
+    if all(map(lambda x: x is not None and isinstance(x, (int, float)) and x != 0, [ub, lb])):
+        model.add(tf.keras.layers.Lambda(lambda X: 2*(X - lb)/(ub - lb) - 1))
     model.add(PINN)
-    optimizer = optimizers.Adam(clipvalue=0.5)
+    if optimizer is None:
+        optimizer = optimizers.Adam(clipvalue=0.5)
     model.compile(loss='mse', optimizer=optimizer, metrics=['mae'])
     # model.compile(loss='mse', optimizer=RMSprop(1e4), metrics=['mae'])
     # model.compile(loss='mse', optimizer="adams", metrics=['mae'])
