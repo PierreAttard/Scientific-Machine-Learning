@@ -13,13 +13,14 @@ class OdePendulum(OdeFn):
 
     """
 
-    def __init__(self, u, omega: float, alpha: float):
-        super(OdePendulum, self).__init__(u)
+    def __init__(self, u: np.array, time_duration: int, dt: float, t_init: float, omega: float, alpha: float):
+        super(OdePendulum, self).__init__(u, time_duration, dt, t_init)
         self._omega = omega
         self._alpha = alpha
 
     def ode_fn(self, t, x, u):
-        return tf.Variable([x[1], u[int(t.numpy())] - (self._omega ** 2) * np.sin(x[0]) - self._alpha * x[1]])
+        t_idx = int(np.abs((self._t - t.numpy())).argmin())
+        return tf.Variable([x[1], u[t_idx] - (self._omega ** 2) * np.sin(x[0]) - self._alpha * x[1]])
 
 
 class DampedPendulumDataGeneration(DataGeneration):
