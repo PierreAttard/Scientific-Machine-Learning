@@ -18,7 +18,8 @@ class DataGeneration:
         """
         self._solver = solver
         self.t_init = t_init
-        self.t = np.arange(t_init, t_init + time_duration + dt, dt)
+        eps = np.finfo(np.float32).eps
+        self.t = np.arange(t_init, t_init + time_duration - eps, dt).astype(np.float32)
         if isinstance(rng, np.random.RandomState):
             self._rng = rng
         elif isinstance(rng, int):
@@ -63,7 +64,7 @@ class DataGeneration:
         res = self._res
         new_res = np.zeros((self._ts_nb, 1, len(initial_condition)))
         res = np.concatenate([new_res]) if res is None else np.concatenate([res, new_res], axis=1)
-        x_init = tf.constant(initial_condition, dtype=tf.float64)
+        x_init = tf.constant(initial_condition, dtype=tf.float32)
         results = self._solver.solve(self.t_init, x_init, solution_times=self.t)
         res[:, -1, 0] = results.states.numpy()[:, 0] + white_gaussian_noise
         res[:, -1, 1] = results.states.numpy()[:, 1] + white_gaussian_noise
